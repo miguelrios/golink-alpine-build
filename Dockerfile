@@ -8,6 +8,14 @@ RUN CGO_ENABLED=0 go build -o /golink ./cmd/golink
 FROM alpine:latest
 RUN apk add --no-cache ca-certificates tzdata curl sqlite
 COPY --from=builder /golink /golink
+
+# Create startup script that seeds links then runs golink
+RUN echo '#!/bin/sh' > /start.sh && \
+    echo '# Wait for golink to create db, then add links' >> /start.sh && \
+    echo '(sleep 15 && sqlite3 /data/golink.db "INSERT OR REPLACE INTO Links (Short, Long, Created, LastEdit, Owner) VALUES (\"dashboard\", \"https://http--dashboard--z69zl6m976vs.code.run/\", datetime(\"now\"), datetime(\"now\"), \"\");" 2>/dev/null || true) &' >> /start.sh && \
+    echo 'exec /golink -sqlitedb /data/golink.db' >> /start.sh && \
+    chmod +x /start.sh
+
 RUN mkdir -p /data
 EXPOSE 80
-CMD ["/golink", "-sqlitedb", "/data/golink.db"]
+CMD ["/start.sh"]
