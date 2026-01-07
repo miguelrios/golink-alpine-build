@@ -6,7 +6,7 @@ RUN git clone https://github.com/tailscale/golink.git .
 RUN CGO_ENABLED=0 go build -o /golink ./cmd/golink
 
 FROM alpine:latest
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk add --no-cache ca-certificates tzdata curl
 COPY --from=builder /golink /golink
 EXPOSE 80
-ENTRYPOINT ["/golink"]
+CMD ["/golink", "-sqlitedb", "/tmp/golink.db"]
