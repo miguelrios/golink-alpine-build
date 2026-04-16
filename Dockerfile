@@ -11,11 +11,11 @@ COPY --from=builder /golink /golink
 
 # Create startup script that seeds links then runs golink
 RUN echo '#!/bin/sh' > /start.sh && \
-    echo '# Wait for golink to create db, then seed links' >> /start.sh && \
-    echo '(sleep 15 && sqlite3 /home/nonroot/golink.db "INSERT OR REPLACE INTO Links (Short, Long, Created, LastEdit, Owner) VALUES (\"dashboard\", \"https://p01--dashboard-service--2xht425f6qpg.xv8dbc9lt5.code.run\", datetime(\"now\"), datetime(\"now\"), \"\");" 2>/dev/null || true) &' >> /start.sh && \
-    echo 'exec /golink -config-dir /home/nonroot/tsnet-golink -sqlitedb /home/nonroot/golink.db -https=false' >> /start.sh && \
+    echo '# Wait for golink to create db, then add links' >> /start.sh && \
+    echo '(sleep 15 && sqlite3 /data/golink.db "INSERT OR REPLACE INTO Links (Short, Long, Created, LastEdit, Owner) VALUES (\"dashboard\", \"https://http--dashboard--z69zl6m976vs.code.run/\", datetime(\"now\"), datetime(\"now\"), \"\");" 2>/dev/null || true) &' >> /start.sh && \
+    echo 'exec /golink -sqlitedb /data/golink.db' >> /start.sh && \
     chmod +x /start.sh
 
-RUN mkdir -p /home/nonroot
+RUN mkdir -p /data
 EXPOSE 80
 CMD ["/start.sh"]
